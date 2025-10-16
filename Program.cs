@@ -1,14 +1,8 @@
 ﻿using Microsoft.Data.SqlClient;
-using Tasks;
+using Tasks.Repositories;
+using Tasks.Services;
 
-Console.WriteLine("Please, enter server name:");
-string server = Console.ReadLine() ?? "localhost";
-Console.WriteLine("Please, enter database name:");
-string database = Console.ReadLine() ?? "tasks";
-
-string connectionString = $"data source={server};initial catalog={database};trusted_connection=true;Encrypt=false;Connect Timeout = 5";
-// DESKTOP-N96LJQD\SQLEXPRESS
-// TasksDB
+string connectionString = Connection.GetConnectionString();
 
 using (var connection = new SqlConnection(connectionString))
 {

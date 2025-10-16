@@ -1,9 +1,13 @@
-﻿namespace Tasks
+﻿using Tasks.Interfaces;
+using Tasks.Models;
+
+namespace Tasks.Services
 {
     public class TodoApp
     {
         public IRepository<TodoTask> DB { get; set; }
-        public TodoApp(IRepository<TodoTask> db) {
+        public TodoApp(IRepository<TodoTask> db)
+        {
             DB = db;
         }
         public void Run()
@@ -23,55 +27,50 @@
                 Console.WriteLine("6 - Exit program");
 
                 string answer = Console.ReadLine() ?? string.Empty;
+                Console.Clear();
 
                 switch (answer)
                 {
                     case "1":
-                        Console.Clear();
                         GetAllTasks();
                         break;
                     case "2":
-                        Console.Clear();
                         GetTaskById();
                         break;
                     case "3":
-                        Console.Clear();
                         AddNewTask();
                         break;
                     case "4":
-                        Console.Clear();
                         UpdateStatusById();
                         break;
                     case "5":
-                        Console.Clear();
                         DeleteTaskById();
                         break;
                     case "6":
                         return;
                     default:
-                        Console.Clear();
                         Console.WriteLine("Please, enter a valid option.");
                         break;
                 }
             }
         }
 
-        public void GetAllTasks()
+        public async void GetAllTasks()
         {
-            IEnumerable<TodoTask> tasks = DB.GetAllTasks();
+            var tasks = await DB.GetAllTasksAsync();
 
+            Console.WriteLine("");
             Console.WriteLine("All available tasks:");
             Console.WriteLine("---------------------");
-            Console.WriteLine("");
-            foreach (TodoTask task in tasks)
+            foreach (var task in tasks)
             {
                 Console.WriteLine($"Title: {task.Title}, Id: {task.Id}");
             }
         }
 
-        public void GetTaskById()
+        public async void GetTaskById()
         {
-            int id = GetId();
+            int id = await GetId();
 
             if (id == 0)
             {
@@ -79,8 +78,9 @@
             }
             else
             {
-                TodoTask taskById = DB.GetTaskById(id);
+                var taskById = await DB.GetTaskByIdAsync(id);
 
+                Console.WriteLine("");
                 Console.WriteLine($"{taskById.Title} - {taskById.CreatedAt.ToString()}");
                 Console.WriteLine("------------------");
                 Console.WriteLine($"{taskById.Description}");
@@ -88,17 +88,18 @@
             }
         }
 
-        public void GetTaskById(int id)
+        public async void GetTaskById(int id)
         {
-            TodoTask taskById = DB.GetTaskById(id);
+            var taskById = await DB.GetTaskByIdAsync(id);
 
+            Console.WriteLine("");
             Console.WriteLine($"{taskById.Title} - {taskById.CreatedAt.ToString()}");
             Console.WriteLine("------------------");
             Console.WriteLine($"{taskById.Description}");
             Console.WriteLine($"Completed: {taskById.IsCompleted}");
         }
 
-        public void AddNewTask()
+        public async void AddNewTask()
         {
             Console.WriteLine("Please, enter the title:");
             string title = Console.ReadLine() ?? "Title";
@@ -108,37 +109,32 @@
 
             TodoTask newTask = new TodoTask(0, title, description, false, DateTime.Now);
 
-            DB.AddNewTask(newTask);
+            await DB.AddNewTaskAsync(newTask);
 
             GetAllTasks();
         }
 
-        public void UpdateStatusById()
+        public async void UpdateStatusById()
         {
-            int id = GetId();
+            int id = await GetId();
 
-            if (id ==0)
+            if (id == 0)
             {
                 Console.WriteLine("There is no such ID, try again");
             }
             else
             {
-                Console.WriteLine("Change status ('no to decline)?");
-                string answer = Console.ReadLine() ?? string.Empty;
+                await DB.UpdateTaskByIdAsync(id);
 
-                if (answer.ToLower() != "no")
-                {
-                    DB.UpdateTaskById(id);
-                }
-
+                Console.WriteLine("");
                 Console.WriteLine("Updated task:");
                 GetTaskById(id);
             }
         }
 
-        public void DeleteTaskById()
+        public async void DeleteTaskById()
         {
-            int id = GetId();
+            int id = await GetId();
 
             if (id == 0)
             {
@@ -146,28 +142,25 @@
             }
             else
             {
-                Console.WriteLine("Are you sure ('no' to decline)?");
-                string answer = Console.ReadLine() ?? string.Empty;
+                await DB.DeleteTaskByIdAsync(id);
 
-                if (answer.ToLower() != "no")
-                {
-                    DB.DeleteTaskById(id);
-                    Console.WriteLine("Deleted!");
-                }
-
+                Console.WriteLine("");
+                Console.WriteLine("Deleted!");
                 GetAllTasks();
             }
         }
 
-        public int GetId()
+        public async Task<int> GetId()
         {
             Console.WriteLine("What Id number do you want to use?");
             int id;
             if (int.TryParse(Console.ReadLine(), out id))
             {
-                IEnumerable<TodoTask> tasks = DB.GetAllTasks();
-                foreach (TodoTask task in tasks) {
-                    if (id == task.Id) {
+                var tasks = await DB.GetAllTasksAsync();
+                foreach (TodoTask task in tasks)
+                {
+                    if (id == task.Id)
+                    {
                         return id;
                     }
                 }
