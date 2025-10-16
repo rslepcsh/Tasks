@@ -5,10 +5,11 @@ namespace Tasks.Services
 {
     public class TodoApp
     {
-        public IRepository<TodoTask> DB { get; set; }
+        //public IRepository<TodoTask> _repository { get; set; }
+        private readonly IRepository<TodoTask> _repository;
         public TodoApp(IRepository<TodoTask> db)
         {
-            DB = db;
+            _repository = db;
         }
         public void Run()
         {
@@ -57,7 +58,7 @@ namespace Tasks.Services
 
         public async void GetAllTasks()
         {
-            var tasks = await DB.GetAllTasksAsync();
+            var tasks = await _repository.GetAllTasksAsync();
 
             Console.WriteLine("");
             Console.WriteLine("All available tasks:");
@@ -78,7 +79,7 @@ namespace Tasks.Services
             }
             else
             {
-                var taskById = await DB.GetTaskByIdAsync(id);
+                var taskById = await _repository.GetTaskByIdAsync(id);
 
                 Console.WriteLine("");
                 Console.WriteLine($"{taskById.Title} - {taskById.CreatedAt.ToString()}");
@@ -90,7 +91,7 @@ namespace Tasks.Services
 
         public async void GetTaskById(int id)
         {
-            var taskById = await DB.GetTaskByIdAsync(id);
+            var taskById = await _repository.GetTaskByIdAsync(id);
 
             Console.WriteLine("");
             Console.WriteLine($"{taskById.Title} - {taskById.CreatedAt.ToString()}");
@@ -109,7 +110,7 @@ namespace Tasks.Services
 
             TodoTask newTask = new TodoTask(0, title, description, false, DateTime.Now);
 
-            await DB.AddNewTaskAsync(newTask);
+            await _repository.AddNewTaskAsync(newTask);
 
             GetAllTasks();
         }
@@ -124,7 +125,7 @@ namespace Tasks.Services
             }
             else
             {
-                await DB.UpdateTaskByIdAsync(id);
+                await _repository.UpdateTaskByIdAsync(id);
 
                 Console.WriteLine("");
                 Console.WriteLine("Updated task:");
@@ -142,7 +143,7 @@ namespace Tasks.Services
             }
             else
             {
-                await DB.DeleteTaskByIdAsync(id);
+                await _repository.DeleteTaskByIdAsync(id);
 
                 Console.WriteLine("");
                 Console.WriteLine("Deleted!");
@@ -156,7 +157,7 @@ namespace Tasks.Services
             int id;
             if (int.TryParse(Console.ReadLine(), out id))
             {
-                var tasks = await DB.GetAllTasksAsync();
+                var tasks = await _repository.GetAllTasksAsync();
                 foreach (TodoTask task in tasks)
                 {
                     if (id == task.Id)
